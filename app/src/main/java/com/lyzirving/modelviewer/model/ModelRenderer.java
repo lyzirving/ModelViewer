@@ -1,13 +1,11 @@
 package com.lyzirving.modelviewer.model;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import com.lyzirving.modelviewer.R;
 import com.lyzirving.modelviewer.model.data.Obj3d;
-import com.lyzirving.modelviewer.model.draw.BitmapUtil;
 import com.lyzirving.modelviewer.model.draw.GLFilter;
 import com.lyzirving.modelviewer.model.draw.ObjFilter;
 import com.lyzirving.modelviewer.model.draw.TextureUtil;
@@ -45,7 +43,6 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         //white background
         GLES20.glClearColor(1f,1f,1f, 1f);
-        MatrixState.setInitStack();
         GlobalThreadPool.get().runLoadObjTask(R.raw.pikachu);
     }
 
@@ -79,12 +76,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
 
         runPreDraw();
 
-        MatrixState.pushMatrix();
+        MatrixState.get().pushMatrix();
 
         if (mContent instanceof ObjFilter)
             ((ObjFilter) mContent).draw(TextureUtil.NO_TEXTURE);
 
-        MatrixState.popMatrix();
+        MatrixState.get().popMatrix();
 
     }
 
@@ -117,7 +114,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
     }
 
     public void destroy() {
-
+        if (mContent != null)
+            mContent.destroy();
     }
 
     private void runPreDraw() {

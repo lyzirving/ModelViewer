@@ -71,7 +71,7 @@ public class GLFilter {
         }
     }
 
-    protected final void initShader(){
+    protected void initShader(){
         mProgram = ShaderUtil.createProgram(mVertexShader, mFragShader);
         //get vertex coordinate's handler
         mPosHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
@@ -111,5 +111,7 @@ public class GLFilter {
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
     }
+
+    public void destroy() {}
 
 }
