@@ -15,6 +15,7 @@ public class MatrixState {
     public static MatrixState get() {
         return MatrixStateWrapper.mInstance;
     }
+
     private float[] mProjMatrix;
     private float[] mVMatrix;
     private float[] mCurrMatrix;

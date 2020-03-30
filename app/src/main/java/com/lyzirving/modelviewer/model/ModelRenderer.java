@@ -25,18 +25,20 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
 
     private int mViewWidth = INVALID_SIZE, mViewHeight = INVALID_SIZE;
 
-    private Queue<Runnable> mRunPreDraw;
+    private GLSurfaceView mGLSurfaceView;
 
     private GLFilter mContent;
 
     private ReentrantLock mLock;
     private Condition mNotEmpty;
+    private Queue<Runnable> mRunPreDraw;
 
-    public ModelRenderer() {
+    public ModelRenderer(GLSurfaceView view) {
         super();
         mRunPreDraw = new LinkedList<>();
         mLock = new ReentrantLock();
         mNotEmpty = mLock.newCondition();
+        mGLSurfaceView = view;
     }
 
     @Override
@@ -78,11 +80,13 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
 
         MatrixState.get().pushMatrix();
 
+        MatrixState.get().translate(0, -0.5f, 0);
+        MatrixState.get().rotate(45, 0, 1, 0);
+
         if (mContent instanceof ObjFilter)
             ((ObjFilter) mContent).draw(TextureUtil.NO_TEXTURE);
 
         MatrixState.get().popMatrix();
-
     }
 
     @Override
@@ -116,6 +120,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
     public void destroy() {
         if (mContent != null)
             mContent.destroy();
+        if (mGLSurfaceView != null)
+            mGLSurfaceView = null;
     }
 
     private void runPreDraw() {

@@ -40,7 +40,7 @@ public class ModelView extends GLSurfaceView implements ModelManager.ModelObserv
     private void initGL() {
         setEGLContextClientVersion(2);
         setEGLConfigChooser(8,8,8,8,16,0);
-        mRenderer = new ModelRenderer();
+        mRenderer = new ModelRenderer(this);
         setRenderer(mRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
