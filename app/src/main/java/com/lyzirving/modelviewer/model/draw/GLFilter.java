@@ -27,7 +27,7 @@ public class GLFilter {
     protected String mVertexShader, mFragShader;
 
     protected float[] mVertex;
-    protected float[] mTextureVertex;
+    protected float[] mTexCoord;
 
     protected FloatBuffer mVertexBuffer;
     protected FloatBuffer mTexCoordBuffer;

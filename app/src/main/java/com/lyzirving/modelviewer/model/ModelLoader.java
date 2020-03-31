@@ -16,6 +16,7 @@ public class ModelLoader {
     private final String VERTEX = "v";
     private final String FACE = "f";
     private final String TEXCOORD = "vt";
+    private final String TEXNAME = "tn";
 
     private static class ModelLoaderWrapper {
         private static ModelLoader mInstance = new ModelLoader();
@@ -36,6 +37,7 @@ public class ModelLoader {
         BufferedReader buffer = new BufferedReader(new InputStreamReader(fileIn));
 
         String line;
+        String texName = null;
         List<Integer> vertexIndex = new ArrayList<>();
         List<Integer> texIndex = new ArrayList<>();
         List<Float> vertex = new ArrayList();
@@ -56,6 +58,10 @@ public class ModelLoader {
 
                 String type = parts.nextToken();
                 switch (type) {
+                    case TEXNAME: {
+                        texName = new String(parts.nextToken());
+                        break;
+                    }
                     case VERTEX: {
                         tmp1 = Float.parseFloat(parts.nextToken());
                         vertex.add(tmp1);
@@ -125,6 +131,7 @@ public class ModelLoader {
         }
 
         Obj3d obj3d = new Obj3d();
+        obj3d.setTextureName(texName);
         obj3d.setVertex(finalVertex);
         obj3d.setTextureCoord(finalTexCoords);
 

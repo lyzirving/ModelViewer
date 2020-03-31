@@ -81,12 +81,12 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
         MatrixState.get().pushMatrix();
 
         MatrixState.get().translate(0, -0.5f, 0);
-        MatrixState.get().rotate(45, 0, 1, 0);
 
         if (mContent instanceof ObjFilter)
             ((ObjFilter) mContent).draw(TextureUtil.NO_TEXTURE);
 
         MatrixState.get().popMatrix();
+
     }
 
     @Override

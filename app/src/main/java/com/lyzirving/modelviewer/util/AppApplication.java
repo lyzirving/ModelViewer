@@ -10,6 +10,7 @@ public class AppApplication extends Application {
     public void onCreate() {
         super.onCreate();
         ModelLoader.get().setResources(getResources());
+        AppContext.get().setAppContext(getApplicationContext());
     }
 
 }

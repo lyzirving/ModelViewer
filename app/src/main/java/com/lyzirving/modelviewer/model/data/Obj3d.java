@@ -4,6 +4,7 @@ public class Obj3d {
 
     private float[] mVertex;
     private float[] mTextureCoord;
+    private String mTextureName;
 
     public void setVertex(float[] vertex) {
         mVertex = vertex;
@@ -19,6 +20,14 @@ public class Obj3d {
 
     public float[] getTextureCoord() {
         return mTextureCoord;
+    }
+
+    public void setTextureName(String name) {
+        mTextureName = name;
+    }
+
+    public String getTextureName() {
+        return mTextureName;
     }
 
 }
