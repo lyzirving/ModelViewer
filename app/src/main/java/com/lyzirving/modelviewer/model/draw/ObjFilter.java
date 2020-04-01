@@ -13,7 +13,7 @@ import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class ObjTextureFilter extends GLFilter {
+public class ObjFilter extends GLFilter {
 
     private static final String DEFAULT_MODEL_VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;\n" +
@@ -44,7 +44,7 @@ public class ObjTextureFilter extends GLFilter {
     private int[] mVertexNumArray;
     private int[] mTexIds;
 
-    public ObjTextureFilter(Obj3d obj3d) {
+    public ObjFilter(Obj3d obj3d) {
         super(DEFAULT_MODEL_VERTEX_SHADER, DEFAULT_MODEL_FRAGMENT_SHADER);
         mObj3d = obj3d;
     }

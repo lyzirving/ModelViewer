@@ -57,12 +57,12 @@ public class ModelLoader {
         try {
             InputStream fileIn = mResources.getAssets().open(path);
             buffer = new BufferedReader(new InputStreamReader(fileIn));
-            String line;
             List<Float> vertex = new ArrayList();
             List<Float> texCoords = new ArrayList();
             List<MtlInfo> mtlInfos = new ArrayList<>();
             List<ObjGroup> groupList = new ArrayList<>();
 
+            String line;
             float maxVertexVal = 1;
             float tmp1, tmp2, tmp3;
             ObjGroup group = null;
@@ -140,6 +140,7 @@ public class ModelLoader {
             float[] tmpVertex, tmpTexCoord;
             Obj3d obj3d = new Obj3d();
 
+            //map index
             for (ObjGroup tmp : groupList) {
                 vertexIndCount = tmp.getVertexIndex().size();
                 texCoordIndCount = tmp.getTexCoordIndex().size();

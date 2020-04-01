@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.lyzirving.modelviewer.model.data.Obj3d;
 import com.lyzirving.modelviewer.model.draw.GLFilter;
-import com.lyzirving.modelviewer.model.draw.ObjTextureFilter;
+import com.lyzirving.modelviewer.model.draw.ObjFilter;
 import com.lyzirving.modelviewer.model.draw.TextureUtil;
 import com.lyzirving.modelviewer.util.GlobalThreadPool;
 import com.lyzirving.modelviewer.model.draw.MatrixState;
@@ -43,6 +43,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         //white background
         GLES20.glClearColor(1f,1f,1f, 1f);
         GlobalThreadPool.get().runLoadObjTask("pikachu.obj");
@@ -61,8 +62,11 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        //clear the color, so the view can display the color wo set by glClearColor()
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        /**
+         * clear the color, so the view can display the color wo set by glClearColor()
+         * clear the buffered depth
+         */
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         if (mContent == null) {
             mLock.lock();
@@ -83,8 +87,8 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
         MatrixState.get().translate(0, -0.5f, 0);
         MatrixState.get().rotate(mRotation, 0, 1, 0);
 
-        if (mContent instanceof ObjTextureFilter)
-            ((ObjTextureFilter) mContent).draw(TextureUtil.NO_TEXTURE);
+        if (mContent instanceof ObjFilter)
+            ((ObjFilter) mContent).draw(TextureUtil.NO_TEXTURE);
 
         MatrixState.get().popMatrix();
 
@@ -99,7 +103,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
         if (mContent == null) {
             mLock.lock();
             try {
-                mContent = new ObjTextureFilter(obj3d);
+                mContent = new ObjFilter(obj3d);
                 mRunPreDraw.add(new Runnable() {
                     @Override
                     public void run() {
@@ -112,7 +116,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
                 mLock.unlock();
             }
         } else {
-            mContent = new ObjTextureFilter(obj3d);
+            mContent = new ObjFilter(obj3d);
             mRunPreDraw.add(new Runnable() {
                 @Override
                 public void run() {
