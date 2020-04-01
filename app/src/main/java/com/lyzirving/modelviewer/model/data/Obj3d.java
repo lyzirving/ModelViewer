@@ -1,33 +1,22 @@
 package com.lyzirving.modelviewer.model.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Obj3d {
 
-    private float[] mVertex;
-    private float[] mTextureCoord;
-    private String mTextureName;
+    private List<ObjGroup> mObjGroup;
 
-    public void setVertex(float[] vertex) {
-        mVertex = vertex;
+    public Obj3d() {
+        mObjGroup = new ArrayList<>();
     }
 
-    public void setTextureCoord(float[] texCoord) {
-        mTextureCoord = texCoord;
+    public void addGroup(ObjGroup face) {
+        mObjGroup.add(face);
     }
 
-    public float[] getVertex() {
-        return mVertex;
-    }
-
-    public float[] getTextureCoord() {
-        return mTextureCoord;
-    }
-
-    public void setTextureName(String name) {
-        mTextureName = name;
-    }
-
-    public String getTextureName() {
-        return mTextureName;
+    public List<ObjGroup> getGroups() {
+        return mObjGroup;
     }
 
 }

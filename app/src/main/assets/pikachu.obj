@@ -4,9 +4,6 @@
 
 mtllib pikachu.mtl
 
-# texture name in res/raw
-tn pikagen
-
 # 191 Vertices
 v 34.493484 75.31411 -39.308891
 v 27.34606 45.516556 -47.155548

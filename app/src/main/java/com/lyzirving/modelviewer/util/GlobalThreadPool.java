@@ -26,11 +26,11 @@ public class GlobalThreadPool {
         mExecutor.submit(r);
     }
 
-    public void runLoadObjTask(final int id) {
+    public void runLoadObjTask(final String name) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                ModelManager.get().appendData( ModelLoader.get().loadFromAssets(id));
+                ModelManager.get().appendData( ModelLoader.get().loadFromAssets(name));
             }
         };
         doInbackground(r);
