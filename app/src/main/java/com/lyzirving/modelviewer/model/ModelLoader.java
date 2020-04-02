@@ -23,6 +23,7 @@ public class ModelLoader {
     private final String TEXCOORD = "vt";
     private final String MTL_LIB = "mtllib";
     private final String USE_MTL = "usemtl";
+    private final String VERTEX_NORMAL = "vn";
 
     //key for mtllib
     private final String NEW_MTL = "newmtl";
@@ -59,6 +60,7 @@ public class ModelLoader {
             buffer = new BufferedReader(new InputStreamReader(fileIn));
             List<Float> vertex = new ArrayList();
             List<Float> texCoords = new ArrayList();
+            List<Float> vertexNormals = new ArrayList();
             List<MtlInfo> mtlInfos = new ArrayList<>();
             List<ObjGroup> groupList = new ArrayList<>();
 
@@ -98,6 +100,12 @@ public class ModelLoader {
                         texCoords.add(Float.parseFloat(parts.nextToken()));
                         break;
                     }
+                    case VERTEX_NORMAL: {
+                        vertexNormals.add(Float.parseFloat(parts.nextToken()));
+                        vertexNormals.add(Float.parseFloat(parts.nextToken()));
+                        vertexNormals.add(Float.parseFloat(parts.nextToken()));
+                        break;
+                    }
                     case USE_MTL: {
                         group = new ObjGroup();
                         group.setMtlName(parts.nextToken());
@@ -127,6 +135,14 @@ public class ModelLoader {
                             else
                                 idx -= 1;
                             group.addTexCoordIndex(idx);
+
+                            //parse vertex normal index for face
+                            idx = Integer.parseInt(subParts.nextToken());
+                            if (idx < 0)
+                                idx = (vertexNormals.size() / 3) + idx;
+                            else
+                                idx -= 1;
+                            group.addVertexNormalIndex(idx);
                         }
                         break;
                     }
@@ -136,16 +152,18 @@ public class ModelLoader {
                 }
             }
 
-            int vertexIndCount, texCoordIndCount, index;
-            float[] tmpVertex, tmpTexCoord;
+            int vertexIndCount, texCoordIndCount, vertexNormalIndCount, index;
+            float[] tmpVertex, tmpTexCoord, tmpVertexNormal;
             Obj3d obj3d = new Obj3d();
 
             //map index
             for (ObjGroup tmp : groupList) {
                 vertexIndCount = tmp.getVertexIndex().size();
                 texCoordIndCount = tmp.getTexCoordIndex().size();
+                vertexNormalIndCount = tmp.getVertexNormalIndex().size();
                 tmpVertex = new float[vertexIndCount * 3];
                 tmpTexCoord = new float[texCoordIndCount * 2];
+                tmpVertexNormal = new float[vertexNormalIndCount * 3];
 
                 for (int i = 0; i < vertexIndCount; i++) {
                     index = tmp.getVertexIndex().get(i);
@@ -162,6 +180,15 @@ public class ModelLoader {
                     tmpTexCoord[i * 2 + 1] = texCoords.get(index * 2 + 1);
                 }
                 tmp.setTexCoord(tmpTexCoord);
+
+                for (int i = 0; i < vertexNormalIndCount; i++) {
+                    index = tmp.getVertexNormalIndex().get(i);
+                    //we must normalize the vertex coord
+                    tmpVertexNormal[i * 3] = vertexNormals.get(index * 3);
+                    tmpVertexNormal[i * 3 + 1] = vertexNormals.get(index * 3 + 1);
+                    tmpVertexNormal[i * 3 + 2] = vertexNormals.get(index * 3 + 2);
+                }
+                tmp.setVertexNormal(tmpVertexNormal);
 
                 for (MtlInfo info : mtlInfos) {
                     if (info.getName() != null && tmp.getMtlName() != null

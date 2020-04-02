@@ -8,13 +8,16 @@ public class ObjGroup {
     private String mMtlName;
     private float[] mVertex;
     private float[] mTexCoord;
+    private float[] mVertexNormal;
     private List<Integer> mVertexIndex;
     private List<Integer> mTexCoordIndex;
+    private List<Integer> mVertexNormalIndex;
     private MtlInfo mMtlInfo;
 
     public ObjGroup() {
         mVertexIndex = new ArrayList<>();
         mTexCoordIndex = new ArrayList<>();
+        mVertexNormalIndex = new ArrayList<>();
     }
 
     public String getMtlName() {
@@ -43,12 +46,23 @@ public class ObjGroup {
         System.arraycopy(texCoord, 0, mTexCoord, 0, texCoord.length);
     }
 
+    public void setVertexNormal(float[] normals) {
+        mVertexNormal = new float[normals.length];
+        System.arraycopy(normals, 0, mVertexNormal, 0, normals.length);
+    }
+
+    public float[] getVertexNormal() { return mVertexNormal; }
+
     public void addVertexIndex(int index) {
         mVertexIndex.add(index);
     }
 
     public void addTexCoordIndex(int index) {
         mTexCoordIndex.add(index);
+    }
+
+    public void addVertexNormalIndex(int index) {
+        mVertexNormalIndex.add(index);
     }
 
     public List<Integer> getVertexIndex() {
@@ -58,6 +72,8 @@ public class ObjGroup {
     public List<Integer> getTexCoordIndex() {
         return mTexCoordIndex;
     }
+
+    public List<Integer> getVertexNormalIndex() { return mVertexNormalIndex; }
 
     public void setMtlInfo(MtlInfo info) {
         mMtlInfo = info;

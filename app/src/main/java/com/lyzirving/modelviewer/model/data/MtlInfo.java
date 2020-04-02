@@ -6,9 +6,13 @@ public class MtlInfo {
     private int mNs;
     private int mD;
     private int mIllum;
+    //diffuse color
     private float[] mKd;
+    //specular color
     private float[] mKs;
+    //ambient color
     private float[] mKa;
+    //source for texture
     private String mMapKd;
 
     public String getName() {

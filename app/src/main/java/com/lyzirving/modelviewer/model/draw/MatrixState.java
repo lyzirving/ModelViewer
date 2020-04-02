@@ -20,7 +20,9 @@ public class MatrixState {
     private float[] mVMatrix;
     private float[] mCurrMatrix;
     private float[] mMVPMatrix;
-    public FloatBuffer mCameraFB;
+    private float[] mLightLocation;
+    private FloatBuffer mCameraFB;
+    private FloatBuffer mLightLocationFB;
 
     private float[][] mStack;
     private int mStackTop;
@@ -35,6 +37,7 @@ public class MatrixState {
     public void reset() {
         llbb = ByteBuffer.allocateDirect(3 * 4);
         mCameraLocation = new float[3];
+        mLightLocation = new float[3];
         mStackTop = -1;
         mStack = new float[10][16];
         mCurrMatrix = new float[16];
@@ -124,6 +127,22 @@ public class MatrixState {
 
     public float[] getCaMatrix() {
         return mVMatrix;
+    }
+
+    public void setLightLocation(float x, float y, float z) {
+        if (Math.abs(x) > 1 || Math.abs(y) > 1 || Math.abs(z) > 1) {
+            float tmp = (float) Math.sqrt(x * x + y * y + z * z);
+            x = x / tmp;
+            y = y / tmp;
+            z = z / tmp;
+        }
+        mLightLocation[0] = x;
+        mLightLocation[1] = y;
+        mLightLocation[2] = z;
+    }
+
+    public float[] getLightLocation() {
+        return mLightLocation;
     }
 
 }
