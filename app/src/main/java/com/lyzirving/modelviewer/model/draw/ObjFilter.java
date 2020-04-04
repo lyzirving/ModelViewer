@@ -15,15 +15,22 @@ import java.util.StringTokenizer;
 
 public class ObjFilter extends GLFilter {
 
+    /**
+     * the light model contains ambient light, diffuse light and specular light;
+     *
+     * note that when we calculate the intersected angle between normal and light vector, we have to
+     * set the dot value minus;
+     *
+     */
     private static final String DEFAULT_MODEL_VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;\n" +
             "uniform mat4 uMMatrix; \n" +
             "uniform vec3 uLightLocation; \n" +
+            "uniform vec3 aAmbient; \n" +
+            "uniform vec3 uDiffuse; \n" +
             "attribute vec3 aPosition;\n" +
             "attribute vec2 aTexCoord; \n" +
             "attribute vec3 aNormal; \n" +
-            "attribute vec3 aAmbient; \n" +
-            "attribute vec3 aDiffuse; \n" +
             "varying vec2 vTexCoord; \n" +
             "varying vec4 vAmbient; \n" +
             "varying vec4 vDiffuse; \n" +
@@ -31,27 +38,24 @@ public class ObjFilter extends GLFilter {
             "  gl_Position = uMVPMatrix * vec4(aPosition,1); \n" +
             "  vTexCoord = aTexCoord; \n" +
             "  \n" +
-            "  vAmbient = vec4(aAmbient, 1.0); \n" +
+            "  vec3 transformedNormal = normalize((uMMatrix * vec4(aNormal, 0.0)).xyz); \n" +
+            "  vec3 lightVector= normalize(uLightLocation - (uMMatrix * vec4(aPosition,1)).xyz); \n" +
+            "  float diffuseFactor = max(0.1, -dot(transformedNormal, lightVector)); \n" +
+            "  vDiffuse = vec4((uDiffuse * diffuseFactor).xyz, 1); \n" +
             "  \n" +
-            "  vec3 normalTarget = aPosition + aNormal; \n" +
-            "  vec3 newNormal = (uMMatrix * vec4(normalTarget,1)).xyz - (uMMatrix * vec4(aPosition,1)).xyz; \n" +
-            "  newNormal = normalize(newNormal); \n" +
-            "  vec3 vp= normalize(uLightLocation - (uMMatrix * vec4(aPosition,1)).xyz); \n" +
-            "  vp = normalize(vp); \n" +
-            "  float cosVal = max(0.0,dot(newNormal,vp)); \n" +
-            "  vDiffuse = vec4(aDiffuse * cosVal, 1.0); \n" +
+            "  vAmbient = vec4(aAmbient, 1); \n" +
             "}";
 
     private static final String DEFAULT_MODEL_FRAGMENT_SHADER =
             "precision mediump float;\n" +
             "varying vec2 vTexCoord; \n" +
+            "uniform sampler2D sTexture; \n" +
             "varying vec4 vAmbient; \n" +
             "varying vec4 vDiffuse; \n" +
-            "uniform sampler2D sTexture; \n" +
             "void main() \n" +
             "{\n" +
-            "   vec4 finalColor = texture2D(sTexture, vTexCoord);\n" +
-            "   gl_FragColor = finalColor;\n" +
+            "  vec4 finalColor = texture2D(sTexture, vTexCoord);\n" +
+            "  gl_FragColor = finalColor * (vDiffuse + vAmbient); \n" +
             "}";
 
     private int mMvpHandler;
@@ -66,8 +70,8 @@ public class ObjFilter extends GLFilter {
     private FloatBuffer[] mVertexBufferArray;
     private FloatBuffer[] mTexCoordBufferArray;
     private FloatBuffer[] mNormalBufferArray;
-    private FloatBuffer[] mAmbientBufferArray;
-    private FloatBuffer[] mDiffuseBufferArray;
+    private float[][] mAmbientArray;
+    private float[][] mDiffuseArray;
     private int[] mVertexNumArray;
     private int[] mTexIds;
 
@@ -81,8 +85,8 @@ public class ObjFilter extends GLFilter {
         mProgram = ShaderUtil.createProgram(mVertexShader, mFragShader);
         mPosHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mNormalHandler = GLES20.glGetAttribLocation(mProgram, "aNormal");
-        mAmbientHandler = GLES20.glGetAttribLocation(mProgram, "aAmbient");
-        mDiffuseHandler = GLES20.glGetAttribLocation(mProgram, "aDiffuse");
+        mAmbientHandler = GLES20.glGetUniformLocation(mProgram, "aAmbient");
+        mDiffuseHandler = GLES20.glGetUniformLocation(mProgram, "uDiffuse");
         mMvpHandler = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
         mMMatrixHandler = GLES20.glGetUniformLocation(mProgram, "uMMatrix");
         mLightLocationHandler = GLES20.glGetUniformLocation(mProgram, "uLightLocation");
@@ -160,32 +164,18 @@ public class ObjFilter extends GLFilter {
 
     private void initLightAffect() {
         List<ObjGroup> groups = mObj3d.getGroups();
-        mAmbientBufferArray = new FloatBuffer[groups.size()];
-        mDiffuseBufferArray = new FloatBuffer[groups.size()];
+        mAmbientArray = new float[groups.size()][3];
+        mDiffuseArray = new float[groups.size()][3];
 
         ObjGroup tmp;
-        ByteBuffer vbb;
-        FloatBuffer tmpBuffer;
         float[] tmpVal;
         for (int i = 0; i < groups.size(); i++) {
             tmp = groups.get(i);
             tmpVal = tmp.getMtlInfo().getKa();//ambient color
-
-            vbb = ByteBuffer.allocateDirect(tmpVal.length * 4);
-            vbb.order(ByteOrder.nativeOrder());
-            tmpBuffer = vbb.asFloatBuffer();
-            tmpBuffer.put(tmpVal);
-            tmpBuffer.position(0);
-            mAmbientBufferArray[i] = tmpBuffer;
+            mAmbientArray[i] = tmpVal;
 
             tmpVal = tmp.getMtlInfo().getKd();//diffuse color
-
-            vbb = ByteBuffer.allocateDirect(tmpVal.length * 4);
-            vbb.order(ByteOrder.nativeOrder());
-            tmpBuffer = vbb.asFloatBuffer();
-            tmpBuffer.put(tmpVal);
-            tmpBuffer.position(0);
-            mDiffuseBufferArray[i] = tmpBuffer;
+            mDiffuseArray[i] = tmpVal;
         }
     }
 
@@ -229,16 +219,12 @@ public class ObjFilter extends GLFilter {
                     2 * 4, mTexCoordBufferArray[i]);
             GLES20.glVertexAttribPointer(mNormalHandler, 3, GLES20.GL_FLOAT,
                     false, 3 * 4, mNormalBufferArray[i]);
-            GLES20.glVertexAttribPointer(mAmbientHandler, 3, GLES20.GL_FLOAT,
-                    false, 3 * 4, mAmbientBufferArray[i]);
-            GLES20.glVertexAttribPointer(mDiffuseHandler, 3, GLES20.GL_FLOAT,
-                    false, 3 * 4, mDiffuseBufferArray[i]);
+            GLES20.glUniform3f(mAmbientHandler, mAmbientArray[i][0], mAmbientArray[i][1], mAmbientArray[i][2]);
+            GLES20.glUniform3f(mDiffuseHandler, mDiffuseArray[i][0], mDiffuseArray[i][1], mDiffuseArray[i][2]);
 
             GLES20.glEnableVertexAttribArray(mPosHandle);
             GLES20.glEnableVertexAttribArray(mTexCoordHandle);
             GLES20.glEnableVertexAttribArray(mNormalHandler);
-            GLES20.glEnableVertexAttribArray(mAmbientHandler);
-            GLES20.glEnableVertexAttribArray(mDiffuseHandler);
 
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + i);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexIds[i]);
@@ -250,8 +236,6 @@ public class ObjFilter extends GLFilter {
         GLES20.glDisableVertexAttribArray(mPosHandle);
         GLES20.glDisableVertexAttribArray(mNormalHandler);
         GLES20.glDisableVertexAttribArray(mTexCoordHandle);
-        GLES20.glDisableVertexAttribArray(mAmbientHandler);
-        GLES20.glDisableVertexAttribArray(mDiffuseHandler);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
     }
 
@@ -265,10 +249,6 @@ public class ObjFilter extends GLFilter {
             tmpTBuffer.clear();
         for (FloatBuffer tmpNBuffer : mNormalBufferArray)
             tmpNBuffer.clear();
-        for (FloatBuffer tmpAmbient : mAmbientBufferArray)
-            tmpAmbient.clear();
-        for (FloatBuffer tmpDiffuse : mDiffuseBufferArray)
-            tmpDiffuse.clear();
         if (mTexIds != null && mTexIds.length > 0) {
             for (int id : mTexIds)
                 GLES20.glDeleteTextures(1, new int[]{id}, 0);

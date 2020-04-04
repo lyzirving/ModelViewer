@@ -47,7 +47,7 @@ public class ModelRenderer implements GLSurfaceView.Renderer, ModelManager.Model
         //white background
         GLES20.glClearColor(1f,1f,1f, 1f);
         GlobalThreadPool.get().runLoadObjTask("pikachu.obj");
-        MatrixState.get().setLightLocation(0, 1, 0);
+        MatrixState.get().setLightLocation(3, 0, 3);
     }
 
     @Override

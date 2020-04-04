@@ -22,7 +22,6 @@ public class MatrixState {
     private float[] mMVPMatrix;
     private float[] mLightLocation;
     private FloatBuffer mCameraFB;
-    private FloatBuffer mLightLocationFB;
 
     private float[][] mStack;
     private int mStackTop;
@@ -129,6 +128,14 @@ public class MatrixState {
         return mVMatrix;
     }
 
+    /**
+     * @param x, x > 0, means the light source is on the right side when you look up to the screen;
+     *           in the code, we should set it minus;
+     * @param y, y > 0, means the light source is on the top side when you look up to the screen;
+     *           in the code, we should set it minus;
+     * @param z, z > 0, means the light source is front of the screen when you look up to the screen;
+     *           we dont't have to set it mimus;
+     */
     public void setLightLocation(float x, float y, float z) {
         if (Math.abs(x) > 1 || Math.abs(y) > 1 || Math.abs(z) > 1) {
             float tmp = (float) Math.sqrt(x * x + y * y + z * z);
@@ -136,8 +143,8 @@ public class MatrixState {
             y = y / tmp;
             z = z / tmp;
         }
-        mLightLocation[0] = x;
-        mLightLocation[1] = y;
+        mLightLocation[0] = -x;
+        mLightLocation[1] = -y;
         mLightLocation[2] = z;
     }
 
