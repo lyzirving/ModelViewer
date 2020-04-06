@@ -6,6 +6,11 @@ import java.nio.FloatBuffer;
 
 import android.opengl.Matrix;
 
+/**
+ *  in default case, the camera is located at (0, 0, 0) in the world coordinate system;
+ *  in default case, the model is located at (0, 0, -1) in the world coordinate system;
+ *  in default case, the up vector is (0, 1, 0);
+ */
 public class MatrixState {
 
     private static class MatrixStateWrapper {
@@ -18,14 +23,14 @@ public class MatrixState {
 
     private float[] mProjMatrix;
     private float[] mVMatrix;
-    private float[] mCurrMatrix;
+    private float[] mCurrMatrix;//default location of model in world coordinate system is (0, 0, -1);
     private float[] mMVPMatrix;
     private float[] mLightLocation;
     private FloatBuffer mCameraFB;
 
     private float[][] mStack;
     private int mStackTop;
-    private float[] mCameraLocation;
+    private float[] mCameraLocation;//default location in world coordinate system is (0, 0, 0);
 
     private ByteBuffer llbb;
 
@@ -34,8 +39,15 @@ public class MatrixState {
     }
 
     public void reset() {
-        llbb = ByteBuffer.allocateDirect(3 * 4);
+        /**
+         * init the default location of camera in world coordinate system
+         */
         mCameraLocation = new float[3];
+        mCameraLocation[0] = 0;
+        mCameraLocation[1] = 0;
+        mCameraLocation[2] = 0;
+
+        llbb = ByteBuffer.allocateDirect(3 * 4);
         mLightLocation = new float[3];
         mStackTop = -1;
         mStack = new float[10][16];
@@ -126,6 +138,10 @@ public class MatrixState {
 
     public float[] getCaMatrix() {
         return mVMatrix;
+    }
+
+    public float[] getCameraLocation() {
+        return mCameraLocation;
     }
 
     /**
